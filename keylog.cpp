@@ -93,7 +93,11 @@ LRESULT __stdcall HookCallback(int nCode, WPARAM wParam, LPARAM lParam)
 				kbdStruct.vkCode == VK_F9 ||
 				kbdStruct.vkCode == VK_F10 ||
 				kbdStruct.vkCode == VK_F11 ||
-				kbdStruct.vkCode == VK_F12)
+				kbdStruct.vkCode == VK_F12 ||
+				kbdStruct.vkCode == VK_LEFT ||
+				kbdStruct.vkCode == VK_RIGHT ||
+				kbdStruct.vkCode == VK_UP ||
+				kbdStruct.vkCode == VK_DOWN)
 			{
 				return CallNextHookEx(_hook, nCode, wParam, lParam); // Skip logging these keys
 			}
